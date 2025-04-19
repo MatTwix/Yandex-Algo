@@ -7,23 +7,20 @@ typedef struct {
     int lChild, rChild, value, mxNum, lBorder, rBorder;
 } node;
 
-void dfs (vector<node> tree, int idx, int &ansMx, int &ansMxNum, pair<int, int> el) {
+void dfs (const vector<node> &tree, int idx, int &ansMx, int &ansMxNum, const pair<int, int> &el) {
     // cout << idx << " " << tree[idx].value << " " << ansMx << endl;
-    if (tree[idx].lChild != -1) {
-        if (tree[idx].rBorder < el.first || tree[idx].lBorder > el.second) {
-            return;
-        } else if (tree[idx].lBorder >= el.first && tree[idx].rBorder <= el.second) {
-            // cout << "i'm here ";
-            if (ansMx < tree[idx].value) {
-                ansMx = tree[idx].value;
-                ansMxNum = tree[idx].mxNum;
-            } else if (ansMx == tree[idx].value) {
-                ansMxNum += tree[idx].mxNum;
-            }
-        } else {
-            dfs(tree, tree[idx].lChild, ansMx, ansMxNum, el);
-            dfs(tree, tree[idx].rChild, ansMx, ansMxNum, el);
+    if (el.first > tree[idx].rBorder) {
+        return;
+    } else if (el.first <= tree[idx].lBorder && el.second >= tree[idx].rBorder) {
+        if (tree[idx].value > ansMx) {
+            ansMx = tree[idx].value;
+            ansMxNum = tree[idx].mxNum;
+        } else if (tree[idx].value == ansMx) {
+            ansMxNum += tree[idx].mxNum;
         }
+    } else if (tree[idx].lBorder <= el.first && tree[idx].rBorder >= el.first || tree[idx].lBorder <= el.second && tree[idx].rBorder >= el.second) {
+        dfs(tree, tree[idx].lChild, ansMx, ansMxNum, el);
+        dfs(tree, tree[idx].rChild, ansMx, ansMxNum, el);
     }
 }
 
@@ -37,8 +34,9 @@ int main (void) {
     vector<node> tree (2 * Npow - 1, {-1, -1, -1, 0, -1, -1});
 
     int buf;
-    for (auto i = 0; i < N; i++) {
-        cin >> buf;
+    for (auto i = 0; i < Npow; i++) {
+        buf = -1;
+        if (i < N) cin >> buf;
         tree[Npow - 1 + i] = {-1, -1, buf, 1, i, i};
     }
 
@@ -63,7 +61,7 @@ int main (void) {
             mxNum = (tree[l].value > tree[r].value) ? tree[l].mxNum : tree[r].mxNum;
         }
         
-        tree[i] = {l, r, val, mxNum, tree[l].lBorder, (tree[r].rBorder == -1) ? N : tree[r].rBorder};
+        tree[i] = {l, r, val, mxNum, tree[l].lBorder, tree[r].rBorder};
     }
 
     // for (int i = 0; i < 2 * Npow - 1; i++) {
