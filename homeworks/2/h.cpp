@@ -1,0 +1,150 @@
+#include <iostream>
+#include <vector>
+
+using namespace std;
+
+typedef struct {
+    int lChild, rChild;
+    int lBorder, rBorder;
+    long long promice;
+    long long value;
+} node;
+
+typedef struct {
+    char reqType;
+    int first, second, third;
+} Request;
+
+void updateTree(vector<node> &tree, int idx, const Request &el) {
+    int promice = tree[idx].promice, l = tree[idx].lChild, r = tree[idx].rChild;
+
+    if (tree[idx].lBorder >= el.first && tree[idx].rBorder <= el.second) {
+        tree[idx].value += el.third;
+        tree[idx].promice += el.third;
+    }
+
+    else if (tree[idx].lBorder <= el.first && tree[idx].rBorder >= el.first || tree[idx].lBorder <= el.second && tree[idx].rBorder >= el.second) {
+        if (promice != 0) {
+            tree[l].value += promice;
+            tree[r].value += promice;
+            if (tree[l].lChild != -1) {
+                tree[l].promice += promice;
+                tree[r].promice += promice;
+            }
+
+            tree[idx].promice = 0;
+        }
+
+        updateTree(tree, l, el);
+        updateTree(tree, r, el);
+
+        tree[idx].value = max(tree[l].value, tree[r].value);
+    }
+}
+
+void dfs(vector<node> &tree, int idx, long long &ansMx, const Request &el) {
+    long long promice = tree[idx].promice, l = tree[idx].lChild, r = tree[idx].rChild;
+
+    if (el.first > tree[idx].rBorder) return;
+    else if (el.first <= tree[idx].lBorder && el.second >= tree[idx].rBorder) {
+        if (promice != 0 && l != -1) {
+            tree[l].value += promice;
+            tree[r].value += promice;
+            if (tree[l].lChild != -1) {
+                tree[l].promice += promice;
+                tree[r].promice += promice;
+            }
+            tree[idx].promice = 0;
+        }
+        ansMx = max(ansMx, tree[idx].value);
+    }
+    else if (tree[idx].lBorder <= el.first && tree[idx].rBorder >= el.first || tree[idx].lBorder <= el.second && tree[idx].rBorder >= el.second) {
+        if (promice != 0) {
+            tree[l].value += promice;
+            tree[r].value += promice;
+            if (tree[l].lChild != -1) {
+                tree[l].promice += promice;
+                tree[r].promice += promice;
+            }
+            tree[idx].promice = 0;
+        }
+
+        dfs(tree, tree[idx].lChild, ansMx, el);
+        dfs(tree, tree[idx].rChild, ansMx, el);
+    }
+}
+
+int main (void) {
+    int N, M;
+    cin >> N;
+
+    int Npow = 1;
+    for (auto i = 0; Npow < N; i++) Npow = 1 << i;
+
+    vector<node> tree (2 * Npow - 1, {-1, -1, -1, -1, 0, -1});
+
+    int buf;
+    for (auto i = 0; i < Npow; i++) {
+        buf = -1;
+        if (i < N) cin >> buf;
+        tree[Npow - 1 + i] = {-1, -1, i, i, 0, buf};
+    }
+
+    cin >> M;
+    vector<Request> requests (M);
+    char reqType;
+    int bufFst, bufSnd;
+
+    for (auto i = 0; i < M; i++) {
+        cin >> reqType >> bufFst;
+        requests[i] = {reqType, bufFst - 1};
+
+        if (reqType == 'a') {
+            cin >> requests[i].second;
+            requests[i].second--;
+            cin >> requests[i].third;
+        } else {
+            requests[i].second = bufFst - 1;
+        }
+    }
+
+    int l, r, val;
+
+    for (int i = Npow - 2; i >= 0; i--) {
+        l = 2*i + 1;
+        r = 2*i + 2;
+        val = max(tree[l].value, tree[r].value);
+
+        tree[i] = {l, r, tree[l].lBorder, tree[r].rBorder, 0, val};
+    }
+
+    // for (int i = 0; i < 2 * Npow - 1; i++) {
+    //     if (log2(i + 1) == ceil(log2(i + 1))) {
+    //         cout << endl;
+    //     }
+    //     cout << tree[i].value << " ";
+    // }
+
+    long long ansMx;
+
+    for (auto el : requests) {
+        ansMx = -1;
+
+        if (el.reqType == 'g') {
+            dfs(tree, 0, ansMx, el);
+            cout << ansMx << endl;
+        } else {
+            updateTree(tree, 0, el);
+        }
+
+        // cout << endl;
+        // for (int i = 0; i < 2 * Npow - 1; i++) {
+        //     if (log2(i + 1) == ceil(log2(i + 1))) {
+        //         cout << endl;
+        //     }
+        //     cout << tree[i].value << ": " << tree[i].promice << " ";
+        // }
+    }
+
+    return 0;
+}
