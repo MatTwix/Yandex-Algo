@@ -3,26 +3,26 @@
 
 using namespace std;
 
-void modify (vector<long long>& tree, long long delta, long long i, long long N) {
+void modify (vector<long long>& tree, long long delta, int i, int N) {
     while (i <= N) {
         tree[i] += delta;
         i |= (i + 1);
     }
 }
 
-void build (vector<long long>& tree, vector<long long> arr, long long N) {
-    for (long long i = 0; i < N; ++i) {
+void build (vector<long long>& tree, vector<long long> arr, int N) {
+    for (int i = 0; i < N; ++i) {
         modify(tree, arr[i], i, N);
     }
 }
 
-void set (vector<long long>& tree, vector<long long>& arr, long long i, long long val, long long N) {
+void set (vector<long long>& tree, vector<long long>& arr, int i, long long val, int N) {
     long long delta = val - arr[i];
     arr[i] = val;
     modify(tree, delta, i, N);
 }
 
-long long prefixSum (const vector<long long>& tree, long long i) {
+long long prefixSum (const vector<long long>& tree, int i) {
     long long res = 0;
     while (i >= 0) {
         res += tree[i];
@@ -32,12 +32,12 @@ long long prefixSum (const vector<long long>& tree, long long i) {
     return res;
 }
 
-long long segmentSum (const vector<long long>& tree, long long start, long long end) {
+long long segmentSum (const vector<long long>& tree, int start, int end) {
     return prefixSum(tree, end) - prefixSum(tree, start - 1);
 }
 
 int main (void) {
-    long long N;
+    int N;
     cin >> N;
 
     vector<long long> nums (N, 0);
@@ -45,7 +45,7 @@ int main (void) {
 
     build(FenwickTree, nums, N);
 
-    long long K;
+    int K;
     cin >> K;
 
     vector<long long> ans;
