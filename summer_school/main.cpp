@@ -1,19 +1,16 @@
 #include <iostream>
-#include <fstream>
-
 using namespace std;
 
-int main (void) {
-    int a, b;
-    
-    ifstream input("input.txt");
-    ofstream output("output.txt");
+int main() {
+    long long a, b, c;
+    cin >> a >> b >> c;
 
-    input >> a >> b;
-    input.close();
-    
-    output << a + b;
-    output.close();
+    long long need = 3 * a + b - c;
+    if (need <= 0) {
+        cout << 0 << endl;
+    } else {
+        cout << (need + 2) / 3 << endl;
+    }
 
     return 0;
 }
